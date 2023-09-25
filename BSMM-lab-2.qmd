@@ -1,8 +1,8 @@
 ---
 title: "BSMM-lab-2"
 subtitle: "BSMM 8740 Fall 2023"
-author: "Add your name here"
-date: "Add the date here"
+author: "Zahra Rohaniasl"
+date: "9/25/2023"
 format: html
 editor: visual
 self-contained: true
@@ -18,11 +18,84 @@ the_tate <- readr::read_delim("data/the-tate-collection.csv", ";", escape_double
 the_tate_artists <- readr::read_csv("data/the-tate-artists.csv")
 ```
 
+```{r}
+install.packages("tidyverse")
+install.packages("tidymodels")
+install.packages("gt")
+install.packages("gtexplorer")
+install.packages("dataexplorer")
+
+```
+
+```{r}
+install.packages("VIM")
+
+```
+
+```{r}
+library(magrittr)     # the pipe
+library(tidyverse)    # for data wrangling + visualization
+library(tidymodels)   # for modeling
+library(gt)           # for making display tables
+library(gtExtras)     # helper functions for beautiful tables
+library(DataExplorer)
+library(VIM)
+library(colorspace)
+library(grid)
+```
+
 ## Exercises
 
 ### Exercise 1
 
 The `the_tate` dataset has \_\_\_ unique artists who worked from \_\_\_ to \_\_\_. The works were acquired between the years \_\_\_ and \_\_\_.
+
+```{r}
+View(the_tate)
+```
+
+```{r}
+
+```
+
+```{r}
+library(dplyr)
+dplyr::summarize(the_tate, .by = NULL, .groups = NULL)
+# Use plot_missing() to visualize missing data
+plot_missing(data = the_tate)
+
+DataExplorer::introduce
+DataExplorer::plot_missing()
+
+```
+
+```{r}
+#unique artists count
+unique_artists <- length(unique(the_tate$artist))
+
+# range of years artists worked
+#na.omit() is used to remove rows with missing values before calculating the year ranges. 
+artists_years <- the_tate %>%
+  filter(!is.na(year)) %>%
+  summarize(
+    start_year = min(year),
+    end_year = max(year)
+  )
+
+# range of years when works were acquired
+acquired_years <- the_tate %>%
+  filter(!is.na(acquisitionYear)) %>%
+  summarize(
+    start_year = min(acquisitionYear),
+    end_year = max(acquisitionYear)
+  )
+
+# Print the results
+cat("The the_tate dataset has", unique_artists, "unique artists who worked from", 
+    artists_years$start_year, "to", artists_years$end_year, ".\n")
+cat("The works were acquired between the years", acquired_years$start_year, "and", acquired_years$end_year, ".\n")
+
+```
 
 ### Exercise 2
 
@@ -33,6 +106,23 @@ The number of artists whose works have missing dates is \_\_.
 It would require resolving missing year data for only \_\_ artists resolve resolve at least 50% of the missing data.
 
 The missing year data likely to be classified as \_\_\_\_.
+
+```{r}
+# Count the number of works with missing dates
+works_missing_dates <- sum(is.na(the_tate$year))
+works_missing_dates
+
+```
+
+```{r}
+# Count the number of unique artists with works missing dates
+artists_missing_dates <- the_tate %>%
+  filter(is.na(year)) %>%
+  distinct(Artist) %>%
+  n()
+artists_missing_dates
+
+```
 
 ### Exercise 3
 
