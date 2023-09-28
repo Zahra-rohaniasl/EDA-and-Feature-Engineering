@@ -261,15 +261,97 @@ print(table)
 
 There are \_\_ duplicate artist-title pairs
 
+```{r}
+library(dplyr)
+
+
+total_rows <- total_works
+total_rows
+
+
+# Select only the columns for artist and title, then count distinct pairs
+distinct_artist_title_pair <- the_tate %>% select(artist,title) %>% distinct()
+
+# Count of distinct artist-title pairs
+distinct_count <- nrow(distinct_artist_title_pair)
+
+distinct_count
+```
+
+```{r}
+duplicate_count <- total_rows - distinct_count
+
+duplicate_count
+```
+
+#There are 23705 duplicate artist-title pairs.
+
 ### Exercise 6
 
 The artist with the largest work in the tate collection is \_\_\_
 
 The artist with the smallest work in the collection is \_\_\_. The smallest work has area \_\_\_ $\text{cm}^2$
 
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+# new column for the area of each artwork
+the_tate <- the_tate %>%
+  mutate(area_cm2 = width * height)
+
+# Select artist, title, and area, remove NA values
+selected_artworks <- the_tate %>%
+  select(artist, title, area_cm2) %>%
+  drop_na() 
+
+# Order the works by area
+ordered_artworks <- selected_artworks %>%
+  arrange(area_cm2)
+
+# The largest artwork in the collection
+largest_artwork <- ordered_artworks %>%
+  slice_tail(n = 1)
+
+largest_artwork
+
+
+# The smallest artwork in the collection
+smallest_artwork <- ordered_artworks %>%
+  slice_head(n = 1)
+
+smallest_artwork
+
+```
+
+#The artist with the largest work in the tate collection is Therrien, Robert (area_cm2 = 123462000)
+
+#The artist with the smallest work in the collection is Mesens, E.L.T. (area_cm2 = 237)
+
 ### Exercise 7
 
-...
+#Join the tables `the_tate` and `the_tate_artists` using `dplyr::left_join`, assigning the result to the variable `the_tate` . Drop rows with `NA` gender values and then group by gender. Show the resulting table.Join the tables `the_tate` and `the_tate_artists` using `dplyr::left_join`, assigning the result to the variable `the_tate` . Drop rows with `NA` gender values and then group by gender. Show the resulting table.
+
+```{r}
+
+# Left join the_tate and the_tate_artists
+the_tate <- left_join(the_tate, the_tate_artists, by = c("artist" = "name"))
+
+# Drop rows with NA gender values
+the_tate <- the_tate %>%
+  filter(!is.na(gender))
+
+# Group by gender and count the occurrences
+resulting_table <- the_tate %>%
+  group_by(gender) %>%
+  summarise(count = n())
+
+# Show the resulting table
+resulting_table
+
+```
 
 ### Exercise 8
 
@@ -277,8 +359,57 @@ The annual return in the SPX price in 2020 was \_\_\_%.
 
 The corresponding price volatility was \_\_\_%.
 
+```{r}
+library(readr)
+dataofstock <- read_csv("data/SPX_HistoricalData_1692322132002.csv")
+View(dataofstock)
+
+
+# Add a column for the year of the transaction
+dataofstock <- dataofstock %>%
+  mutate(Year = lubridate::year(as.Date(Date, format = "%m/%d/%Y")))
+
+
+dataofstock <- dataofstock %>%
+  rename("close"=`Close/Last`)
+
+dataofstock <- dataofstock %>%
+  mutate(rd = log(lead(close) / close))
+
+
+dataofstock <- dataofstock %>%
+  mutate(vard = rd^2)
+
+summary_data <- dataofstock %>%
+  group_by(Year) %>%
+  summarize(
+    Annual_Return = (exp(sum(rd, na.rm = TRUE)) - 1)*100,
+    Annual_StdDev = sqrt(sum(vard, na.rm = TRUE))*100,
+    .groups = "drop"  # Drop grouping after summary
+  )
+
+summary_data
+
+```
+
+#The annual return in the SPX price in 2020 was -13.98510%.
+
+#The corresponding price volatility was 34.70043%.
+
 ### Exercise 9
 
 The period volatility was \_\_\_.\_%
 
-### 
+```{r}
+# Calculate the period volatility as the standard deviation of annual returns
+period_volatility <- sd(summary_data$Annual_Return)
+
+period_volatility
+
+cat("The period volatility was:",period_volatility, "%\n")
+
+```
+
+```         
+The period volatility was: 19.51618 %
+```
