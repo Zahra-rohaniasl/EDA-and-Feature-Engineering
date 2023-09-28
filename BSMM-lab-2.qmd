@@ -51,11 +51,32 @@ library(grid)
 The `the_tate` dataset has \_\_\_ unique artists who worked from \_\_\_ to \_\_\_. The works were acquired between the years \_\_\_ and \_\_\_.
 
 ```{r}
-View(the_tate)
+glimpse(the_tate_artists)
+
 ```
 
 ```{r}
+View(the_tate)
+View(the_tate_artists)
+```
 
+```{r}
+glimpse(the_tate)
+
+```
+
+```{r}
+summary(the_tate)
+
+```
+
+```{r}
+# summary of each artist
+the_tate %>% dplyr::group_by(the_tate$artist) %>% 
+dplyr::summarize(N=n(),min_yearworking= min(the_tate$year,na.rm = TRUE),
+max_yearworking= max(the_tate$year,na.rm = TRUE),
+min_aquistionyear=min(the_tate$acquisitionYear, na.rm = TRUE),
+max_acquisitionyear=max(the_tate$year,na.rm = TRUE)  )
 ```
 
 ```{r}
@@ -64,8 +85,10 @@ dplyr::summarize(the_tate, .by = NULL, .groups = NULL)
 # Use plot_missing() to visualize missing data
 plot_missing(data = the_tate)
 
-DataExplorer::introduce
-DataExplorer::plot_missing()
+DataExplorer::introduce(the_tate)
+DataExplorer::introduce(the_tate_artists)
+DataExplorer::plot_missing(the_tate)
+DataExplorer::plot_missing(the_tate_artists)
 
 ```
 
@@ -97,6 +120,10 @@ cat("The works were acquired between the years", acquired_years$start_year, "and
 
 ```
 
+```         
+#The the_tate dataset has 3336 unique artists who worked from 1545 to 2012 . The works were acquired between the years 1823 and 2013 .
+```
+
 ### Exercise 2
 
 How number of works with missing dates is \_\_.
@@ -115,14 +142,60 @@ works_missing_dates
 ```
 
 ```{r}
+the_tate|>dplyr::filter(is.na(year))|>dplyr::distinct(artist)
+
+```
+
+```{r}
 # Count the number of unique artists with works missing dates
 artists_missing_dates <- the_tate %>%
   filter(is.na(year)) %>%
-  distinct(Artist) %>%
-  n()
+  distinct(artist) %>%
+  nrow()
+
 artists_missing_dates
 
 ```
+
+```{r}
+# Count the number of works missing years for each artist
+artists_missing_year_counts <- the_tate|>dplyr::filter(is.na(year)) %>% 
+  group_by(artist) %>%
+  summarise(missing_years = sum(is.na(year))) %>%
+  arrange(desc(missing_years)) %>%
+  as_tibble()
+```
+
+```{r}
+# Number of artists have works with missing years
+artists_missing_years <- nrow(artists_missing_year_counts)
+artists_missing_years
+```
+
+```{r}
+#percentage of total missing data for each artist
+artists_missing_year_counts <- artists_missing_year_counts %>%
+  mutate(percentage = (missing_years / works_missing_dates) * 100)
+```
+
+```{r}
+# Cumulative percentage of missing data
+artists_missing_year_counts <- artists_missing_year_counts %>%
+  mutate(cumulative_percentage = cumsum(percentage))
+```
+
+```{r}
+# The smallest number of artists needed to resolve at least 50% of the missing year data
+artists_to_resolve_50_percent <- min(which(artists_missing_year_counts$cumulative_percentage >= 50))
+
+artists_to_resolve_50_percent
+```
+
+#The number of artists whose works have missing dates is \*\*461\*\*.
+
+#It would require resolving missing year data for only \*\*11\*\* artists resolve resolve at least 50% of the missing data.
+
+#The missing year data likely to be classified as \*\*MAR\*\*.
 
 ### Exercise 3
 
@@ -130,9 +203,59 @@ The artist with the most works in the Tate collection is \_\_\_.
 
 The artist with the tenth-most works in the Tate collection is \_\_\_.
 
+```{r}
+# Number of works for each artist
+artist_work_counts <- the_tate %>%
+  group_by(artist) %>%
+  summarize(title = n()) %>%
+  arrange(desc(title))
+
+artist_work_counts
+
+```
+
+```{r}
+# Top 10 artists by the number of works
+top_10_artists <- artist_work_counts %>%
+  slice_head(n = 10)
+
+top_10_artists
+```
+
+#The artist with the most works in the Tate collection is Turner, Joseph ...
+
+#The artist with the tenth-most works in the Tate collection is Warhol, Andy.
+
 ### Exercise 4
 
 The artist with the greatest number of works in the Tate collection represent \_\_\_% of the total number of works
+
+```{r}
+total_works <- nrow(the_tate)
+artist_work_counts %<>%mutate(percentage=(title/total_works)*100)
+
+artist_work_counts
+```
+
+```{r}
+install.packages("gtExtras")
+```
+
+```{r}
+library(gtExtras)
+# Create the table
+table <- artist_work_counts %>%
+  gt() %>%
+  fmt_number(
+    columns = c(title, percentage), # Format both title and percentage columns
+    decimals = 2 # No decimal places for title, and decimals for percentage
+  ) %>%
+  tab_header(title = "Top Artists by Number of Works and Percentage of Collection")
+
+print(table)
+```
+
+#The artist with the greatest number of works in the Tate collection represent \*\*56.92%\*\* of the total number of works
 
 ### Exercise 5
 
