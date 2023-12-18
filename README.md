@@ -1,20 +1,11 @@
-# EDA and Feature engineering
+# The Tate Collection
 
 ------------------------------------------------------------------------
 
-Exploratory data analysis is the process of understanding a new dataset by looking at the data, constructing graphs, tables, and models. We want to understand three aspects:
-
-1. each individual variable by itself;
-
-2. each individual variable in the context of other, relevant, variables; and
-
-3. the data that are not there.
 
 
-Descriptive statistics and graphical methods support the following process:
+Tate is an institution that houses the United Kingdom’s national collection of British art, and international modern and contemporary art. It is a network of four art museums: Tate Britain, London (until 2000 known as the Tate Gallery, founded 1897), Tate Liverpool (founded 1988), Tate St Ives, Cornwall (founded 1993) and Tate Modern, London (founded 2000), with a complementary website, Tate Online (created 1998). Tate is not a government institution, but its main sponsor is the UK Department for Culture, Media and Sport.
 
-1. Understand the distribution and properties of individual variables.
+This dataset used here contains the metadata for around 70,000 artworks that Tate owns or jointly owns with the National Galleries of Scotland as part of ARTIST ROOMS. Metadata for around 3,500 associated artists is also included.
 
-2. Understand relationships between variables.
-
-3. Understand what is not there.
+The metadata here is released under the Creative Commons Public Domain CC0 licence. Images are not included and are not part of the dataset.
